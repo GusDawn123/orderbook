@@ -1,0 +1,32 @@
+# Stage 1: Build C++ engine with static libstdc++
+FROM gcc:13 AS engine-builder
+
+RUN apt-get update && apt-get install -y cmake git && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY engine/ engine/
+COPY CMakeLists.txt .
+
+RUN cmake -B build -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" && \
+    cmake --build build --config Release
+
+# Stage 2: Node.js server with engine binary
+FROM node:20-slim
+
+WORKDIR /app
+
+COPY server/package*.json ./
+RUN npm install --legacy-peer-deps
+
+COPY server/tsconfig.json ./
+COPY server/src/ src/
+
+RUN npx tsc
+
+COPY --from=engine-builder /app/build/engine/orderbook_server /usr/local/bin/orderbook_server
+RUN chmod +x /usr/local/bin/orderbook_server
+
+EXPOSE 3001
+
+CMD ["node", "dist/index.js"]

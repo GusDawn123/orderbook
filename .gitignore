@@ -1,0 +1,27 @@
+# Build outputs
+build/
+dist/
+out/
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+.claude/
+.vs/
+*.swp
+*.swo
+*.user
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+pgdata/
